@@ -7,8 +7,19 @@ variable "cluster_name" {
 variable "cluster_version" {
   description = "Kubernetes version"
   type        = string
-  default     = "1.24"
+  default     = "1.33"
 }
+
+variable "kubernetes_version" {
+  type        = string
+  default     = "1.33"
+  description = "Versión de Kubernetes (major.minor) para el clúster EKS."
+  validation {
+    condition     = can(regex("^1\\.(30|31|32|33)$", var.kubernetes_version))
+    error_message = "Usa una versión soportada: 1.30–1.33."
+  }
+}
+
 
 variable "vpc_id" {
   description = "VPC ID where the cluster will be deployed"
@@ -45,10 +56,25 @@ variable "instance_types" {
 }
 
 variable "ami_type" {
-  description = "AMI type for worker nodes"
   type        = string
-  default     = "AL2_x86_64"
+  default     = "AL2023_x86_64_STANDARD"  # ✅ válido para 1.33
+  description = "AMI type para Managed Node Groups."
+  validation {
+    condition = contains([
+      "AL2_x86_64", "AL2_x86_64_GPU", "AL2_ARM_64",
+      "CUSTOM",
+      "BOTTLEROCKET_ARM_64", "BOTTLEROCKET_x86_64",
+      "BOTTLEROCKET_ARM_64_FIPS", "BOTTLEROCKET_x86_64_FIPS",
+      "BOTTLEROCKET_ARM_64_NVIDIA", "BOTTLEROCKET_x86_64_NVIDIA",
+      "WINDOWS_CORE_2019_x86_64", "WINDOWS_FULL_2019_x86_64",
+      "WINDOWS_CORE_2022_x86_64", "WINDOWS_FULL_2022_x86_64",
+      "AL2023_x86_64_STANDARD", "AL2023_ARM_64_STANDARD",
+      "AL2023_x86_64_NEURON", "AL2023_x86_64_NVIDIA", "AL2023_ARM_64_NVIDIA"
+    ], var.ami_type)
+    error_message = "Valor ami_type inválido."
+  }
 }
+
 
 variable "capacity_type" {
   description = "Capacity type for nodes (ON_DEMAND or SPOT)"

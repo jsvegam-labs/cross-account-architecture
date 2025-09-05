@@ -14,3 +14,7 @@ sudo dnf install -y postgresql15
 - Add an Inbound rule in the SG of DB to enable conecctions from SG wheres EC2 resides
 -  Command to coonet from shell:
 psql -h <db-end-point> -U <user> -d <admin>
+
+
+
+

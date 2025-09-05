@@ -33,8 +33,10 @@ module "eks" {
     aws = aws.virginia
   }
 
-  cluster_name    = "my-eks-cluster"
-  cluster_version = "1.27"
+  cluster_name       = "my-eks-cluster"
+  # version         = var.kubernetes_version   # ❌ NO (meta-argumento, no input)
+  kubernetes_version = var.kubernetes_version  # ✅ pásalo como variable de tu módulo
+
   vpc_id          = module.vpc_virginia.vpc_id
   subnet_ids      = module.vpc_virginia.private_subnets
 
@@ -47,38 +49,39 @@ module "eks" {
   disk_size       = 20
 
   tags = {
-    Environment = "production"
+    Environment = "POC-DEV"
   }
 }
+
 
 # Ohio resources (MSK and Glue)
-module "vpc_ohio" {
-  source  = "terraform-aws-modules/vpc/aws"
-  version = "5.0.0"
-  providers = {
-    aws = aws.ohio
-  }
+# module "vpc_ohio" {
+#   source  = "terraform-aws-modules/vpc/aws"
+#   version = "5.0.0"
+#   providers = {
+#     aws = aws.ohio
+#   }
 
-  name = "vpc-ohio"
-  cidr = "10.1.0.0/16"
+#   name = "vpc-ohio"
+#   cidr = "10.1.0.0/16"
 
-  azs             = ["us-east-2a", "us-east-2b", "us-east-2c"]
-  private_subnets = ["10.1.1.0/24", "10.1.2.0/24", "10.1.3.0/24"]
-  public_subnets  = ["10.1.101.0/24", "10.1.102.0/24", "10.1.103.0/24"]
+#   azs             = ["us-east-2a", "us-east-2b", "us-east-2c"]
+#   private_subnets = ["10.1.1.0/24", "10.1.2.0/24", "10.1.3.0/24"]
+#   public_subnets  = ["10.1.101.0/24", "10.1.102.0/24", "10.1.103.0/24"]
 
-  enable_nat_gateway = true
-  single_nat_gateway = true
-}
+#   enable_nat_gateway = true
+#   single_nat_gateway = true
+# }
 
-module "msk" {
-  source = "./modules/msk"
-  providers = {
-    aws = aws.ohio
-  }
+# module "msk" {
+#   source = "./modules/msk"
+#   providers = {
+#     aws = aws.ohio
+#   }
 
-  vpc_id          = module.vpc_ohio.vpc_id
-  private_subnets = module.vpc_ohio.private_subnets
-}
+#   vpc_id          = module.vpc_ohio.vpc_id
+#   private_subnets = module.vpc_ohio.private_subnets
+# }
 
 # module "glue_schema" {
 #   source = "./modules/glue_schema"

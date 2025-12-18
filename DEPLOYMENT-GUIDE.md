@@ -39,6 +39,32 @@ aws eks update-kubeconfig --name my-eks-cluster --region us-east-1
 kubectl get nodes
 ```
 
+## 🏗️ Arquitectura del Sistema
+
+```
+┌─────────────────────────────────────────┐
+│           Tu EKS Cluster                │
+│         (my-eks-cluster)                │
+├─────────────────────────────────────────┤
+│  Namespace: default                     │
+│  ├── Tu aplicación (deepseek-app)      │
+│                                         │
+│  Namespace: argocd                      │
+│  ├── argocd-server                     │
+│  ├── argocd-repo-server                │
+│  ├── argocd-application-controller     │
+│                                         │
+│  Namespace: jenkins (si enabled)        │
+│  ├── jenkins-controller                │
+└─────────────────────────────────────────┘
+```
+
+**Ubicación de Componentes:**
+- **ArgoCD:** Desplegado en tu EKS existente (namespace `argocd`)
+- **Jenkins:** Opcional, mismo EKS (namespace `jenkins`)
+- **Aplicaciones:** Namespace `default`
+- **Costo adicional:** Solo LoadBalancer ArgoCD (+$16/mes)
+
 ## 🔄 Paso 2: Desplegar Pipeline CI/CD
 
 ### 2.1 Usar tu Repository Existente
@@ -114,6 +140,39 @@ echo "# Test" >> README.md
 git add .
 git commit -m "Trigger first deployment"
 git push
+```
+
+## 🔐 Credenciales de Acceso
+
+### ArgoCD
+```bash
+# URL de acceso
+kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+# Usuario: admin
+# Password:
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
+### Jenkins (si está habilitado)
+```bash
+# URL de acceso
+kubectl get svc jenkins -n jenkins -o jsonpath='{.status.loadBalancer.ingress[0].hostname}:8080'
+
+# Usuario: admin
+# Password:
+kubectl get secret jenkins -n jenkins -o jsonpath="{.data.jenkins-admin-password}" | base64 -d
+```
+
+### Acceso Alternativo (Port-Forward)
+```bash
+# ArgoCD (sin LoadBalancer)
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+# Acceder: https://localhost:8080
+
+# Jenkins (sin LoadBalancer)
+kubectl port-forward svc/jenkins -n jenkins 8080:8080
+# Acceder: http://localhost:8080
 ```
 
 ## 🔍 Verificación

@@ -1,5 +1,9 @@
 terraform {
   required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
     kubernetes = {
       source  = "hashicorp/kubernetes"
       version = "~> 2.38"
@@ -9,6 +13,11 @@ terraform {
       version = "~> 2.17"
     }
   }
+}
+
+provider "aws" {
+  region  = var.region
+  profile = var.aws_profile
 }
 
 data "aws_eks_cluster" "cluster" {

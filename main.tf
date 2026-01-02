@@ -41,10 +41,10 @@ module "eks" {
   subnet_ids = module.vpc_virginia.private_subnets
 
   # Node group configuration
-  desired_size   = 1
-  max_size       = 2
+  desired_size   = 3
+  max_size       = 3
   min_size       = 1
-  instance_types = ["t3.small"]
+  instance_types = ["t3.medium"]
   capacity_type  = "SPOT"
   disk_size      = 20
 

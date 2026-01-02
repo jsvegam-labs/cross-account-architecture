@@ -1,6 +1,6 @@
 output "argocd_server_url" {
   description = "ArgoCD server URL"
-  value       = "http://${helm_release.argocd.status[0].load_balancer[0].ingress[0].hostname}"
+  value       = "Get URL with: kubectl get svc argocd-server -n argocd"
 }
 
 output "argocd_admin_password" {
@@ -11,5 +11,5 @@ output "argocd_admin_password" {
 
 output "jenkins_url" {
   description = "Jenkins URL"
-  value       = var.enable_jenkins ? "http://${helm_release.jenkins[0].status[0].load_balancer[0].ingress[0].hostname}:8080" : null
+  value       = var.enable_jenkins ? "Get URL with: kubectl get svc jenkins -n jenkins" : "Jenkins not enabled"
 }

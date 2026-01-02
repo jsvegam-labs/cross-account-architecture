@@ -129,9 +129,12 @@ resource "aws_eks_node_group" "nodes" {
   instance_types = var.instance_types
   disk_size      = var.disk_size
 
-  remote_access {
-    ec2_ssh_key               = var.key_name
-    source_security_group_ids = var.remote_access_sg_ids
+  dynamic "remote_access" {
+    for_each = var.key_name != null ? [1] : []
+    content {
+      ec2_ssh_key               = var.key_name
+      source_security_group_ids = var.remote_access_sg_ids
+    }
   }
 
   tags = merge(
@@ -148,24 +151,23 @@ resource "aws_eks_node_group" "nodes" {
   depends_on = [
     aws_iam_role_policy_attachment.node_worker_policy,
     aws_iam_role_policy_attachment.node_ecr_policy,
-    aws_iam_role_policy_attachment.node_cni_policy,
-    kubernetes_config_map.aws_auth
+    aws_iam_role_policy_attachment.node_cni_policy
   ]
 }
 
-resource "kubernetes_config_map" "aws_auth" {
-  metadata {
-    name      = "aws-auth"
-    namespace = "kube-system"
-  }
+# resource "kubernetes_config_map" "aws_auth" {
+#   metadata {
+#     name      = "aws-auth"
+#     namespace = "kube-system"
+#   }
 
-  data = {
-    mapRoles = yamlencode([{
-      rolearn  = aws_iam_role.nodes.arn
-      username = "system:node:{{EC2PrivateDNSName}}"
-      groups   = ["system:bootstrappers", "system:nodes"]
-    }])
-  }
+#   data = {
+#     mapRoles = yamlencode([{
+#       rolearn  = aws_iam_role.nodes.arn
+#       username = "system:node:{{EC2PrivateDNSName}}"
+#       groups   = ["system:bootstrappers", "system:nodes"]
+#     }])
+#   }
 
-  depends_on = [aws_eks_cluster.cluster]
-}
+#   depends_on = [aws_eks_cluster.cluster]
+# }

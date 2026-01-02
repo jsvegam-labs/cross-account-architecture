@@ -15,3 +15,15 @@ variable "enable_jenkins" {
   type        = bool
   default     = false
 }
+
+variable "aws_profile" {
+  description = "AWS CLI profile"
+  type        = string
+  default     = "default"
+}
+
+variable "region" {
+  description = "AWS region"
+  type        = string
+  default     = "us-east-1"
+}

@@ -241,15 +241,63 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 3. **ArgoCD** → Detecta cambios + Deploy a EKS
 4. **EKS** → Ejecuta nueva versión de la app
 
-## 🧹 Limpieza (Opcional)
+## 🧹 Destrucción Ordenada
 
+⚠️ **IMPORTANTE**: Seguir este orden exacto para evitar recursos colgados.
+
+### Opción A: Script Automático (Recomendado)
 ```bash
-# Limpiar aplicaciones
-kubectl delete applications -n argocd --all
+./destroy.sh
+```
 
-# Limpiar ArgoCD
-kubectl delete namespace argocd
+### Opción B: Manual (Paso a Paso)
 
-# Destruir infraestructura
+#### 1. Actualizar Git Repository
+```bash
+# Commitear todos los cambios antes de destruir
+git add .
+git commit -m "feat: save final state before destroy"
+git push
+```
+
+#### 2. Destruir CI/CD (ArgoCD)
+```bash
+cd cicd
 terraform destroy -auto-approve
+```
+
+#### 3. Limpiar Namespaces Problemáticos
+```bash
+# Eliminar aplicaciones ArgoCD primero
+kubectl delete applications -n argocd --all 2>/dev/null || true
+
+# Eliminar CRDs de Rancher si existen
+kubectl get crd | grep cattle | awk '{print $1}' | xargs kubectl delete crd 2>/dev/null || true
+
+# Forzar eliminación de namespaces colgados
+for ns in cattle-system cert-manager ingress-nginx java-demo; do
+  kubectl patch namespace $ns -p '{"metadata":{"finalizers":null}}' --type=merge 2>/dev/null || true
+done
+```
+
+#### 4. Destruir Addons
+```bash
+cd addons
+terraform destroy -auto-approve
+```
+
+#### 5. Destruir Infraestructura Base
+```bash
+# Desde el directorio raíz
+terraform destroy -auto-approve
+```
+
+#### 6. Verificar Limpieza Completa
+```bash
+# Verificar que no hay cluster
+kubectl get nodes 2>/dev/null || echo "✅ Cluster eliminado"
+
+# Verificar recursos AWS (opcional)
+aws eks list-clusters --region us-east-1
+aws ec2 describe-vpcs --filters "Name=tag:Name,Values=vpc-virginia" --region us-east-1
 ```

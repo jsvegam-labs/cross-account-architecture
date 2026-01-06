@@ -27,8 +27,12 @@ health: ## Health check completo del sistema
 	@echo "🏥 Ejecutando health check..."
 	@source $(CONFIG_SCRIPT) && full_health_check
 
-destroy: ## Destruir infraestructura (con confirmación)
-	@echo "⚠️  ADVERTENCIA: Esto destruirá toda la infraestructura"
+destroy: ## Destrucción ordenada completa (recomendado)
+	@echo "🧹 Iniciando destrucción ordenada..."
+	@./destroy.sh
+
+destroy-force: ## Destruir solo infraestructura base (sin orden)
+	@echo "⚠️  ADVERTENCIA: Esto destruirá la infraestructura base"
 	@read -p "¿Estás seguro? (yes/no): " confirm && [ "$$confirm" = "yes" ]
 	@terraform destroy -auto-approve
 

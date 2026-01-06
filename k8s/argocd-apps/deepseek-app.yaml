@@ -6,12 +6,12 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/your-username/cross-account-architecture
+    repoURL: https://github.com/jsvegam-labs/java-demo-app
     targetRevision: HEAD
     path: k8s/manifests
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: java-demo
   syncPolicy:
     automated:
       prune: true
